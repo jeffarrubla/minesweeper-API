@@ -3,6 +3,7 @@ from django.shortcuts import render
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework import status
 from .utils import cells_to_str
 # Create your views here.
 
@@ -52,20 +53,20 @@ class MinefieldViewSet(viewsets.GenericViewSet):
 		try:
 			width = int(request.GET.get('width',''))
 		except ValueError:
-			return Response({'error':'El ancho debe ser un entero'})
+			return Response({'error':'El ancho debe ser un entero'},status=status.HTTP_400_BAD_REQUEST)
 
 		try:
 			height = int(request.GET.get('height',''))
 		except ValueError:
-			return Response({'error':'El alto debe ser un entero', })
+			return Response({'error':'El alto debe ser un entero'},status=status.HTTP_400_BAD_REQUEST)
 
 		try:
 			num_mines = int(request.GET.get('num_mines',''))
 		except ValueError:
-			return Response({'error':'El número de minas ser un entero'})
+			return Response({'error':'El número de minas ser un entero'},status=status.HTTP_400_BAD_REQUEST)
 
 		self.cells = [[Cell(0) for  _ in range(width) ] for  _ in range(height)]
 		self.num_mines = num_mines
 		self.initialized = False
-		return Response({'minefield':cells_to_str(self.cells)})
+		return Response({'minefield':cells_to_str(self.cells)},status=status.HTTP_200_OK)
 
