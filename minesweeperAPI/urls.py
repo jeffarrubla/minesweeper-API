@@ -21,6 +21,8 @@ from minesweeper.views import MinefieldViewSet
 router_minesweeper = DefaultRouter(trailing_slash=False)
 
 router_minesweeper.register('api/minesweeper', MinefieldViewSet, basename='start_game')
+router_minesweeper.register('api/minesweeper', MinefieldViewSet, basename='show_cell_contents_at_point')
+
 
 urlpatterns = [
 	path('',include((router_minesweeper.urls, 'minesweeper'), namespace="minesweeper")),

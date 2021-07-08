@@ -28,11 +28,46 @@ def cells_around_point(point, cells):
 			# indexes equal to point or any index out of bound, then continue
 			if (x == point_x and y == point_y) or x <0 or y < 0 or x > width or y > heigth:
 				continue
-			
-			yield cells[y][x]		
+
+			yield Point(x,y)
 
 def count_mines_around_point(point, cells):
 	"""
 		to count the mines around a point
 	"""
-	return sum(cell.is_mine() for cell in cells_around_point(point, cells))
+	return sum(cells[p.y][p.x].is_mine() for p in cells_around_point(point, cells))
+
+def show_contents_at_point(point, cells):
+	"""
+		to show the content of the cells
+	"""
+	point_x, point_y = point
+	# is flagged, or visible or is a mine? then return, otherwise show and iterate through next points
+	if cells[point_y][point_x].flagged or cells[point_y][point_x].visible or cells[point_y][point_x].is_mine():
+		return
+	cells[point_y][point_x].set_visible()
+	if cells[point_y][point_x].value == 0:
+		for p in cells_around_point(point, cells):	
+			show_contents_at_point(p, cells)
+
+def all_cells_diplayed(cells):
+	"""
+		Used to know if all cells are displayed and the mines don't
+		Returns boolean
+	"""
+	el = []
+	for row in cells:
+		for cell in row:
+			el.append(cell.is_mine() or cell.visible)
+	return all(el)
+
+def show_contents_all_cells(cells):
+	"""
+		Used to display all cells (when user lost)
+		Returns the cells
+	"""
+	for y in range(len(cells)):
+		for x in range(len(cells[0])):
+			cells[y][x].set_visible()
+
+	return cells
