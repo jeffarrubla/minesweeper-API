@@ -70,6 +70,9 @@ class MinefieldViewSet(viewsets.GenericViewSet):
 		if width < 0 or height < 0 or num_mines < 0:
 			return Response({'error':'El ancho, alto y/o número de minas ser un entero positivo'},status=status.HTTP_400_BAD_REQUEST)			
 
+		if num_mines > width * height:
+			return Response({'error':'El número de minas ser menor o igual que el número de celdas'},status=status.HTTP_400_BAD_REQUEST)
+
 		# size of the minefield
 		self.cells = [[Cell(0) for _ in range(width) ] for _ in range(height)]
 		self.num_mines = num_mines

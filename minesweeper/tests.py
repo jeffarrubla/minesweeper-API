@@ -43,6 +43,27 @@ class StartGameTest(TestCase):
 		self.assertEqual(len(response.json()['minefield']), 2) # there are 2 rows
 		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+	def test_cannot_start_game_with_num_mines_bigger_than_total_of_cells(self):
+		""" 
+			Test to start a game successfully, num_mines is bigger than number of cells.
+
+			Parameters:
+			----------
+				width -- minefield's width? (required)
+			    height -- minefield's height? (required)
+			    num_mines -- minefield's number of mines? (required)
+
+			Assertions
+			----------
+				This test fails starting a game num_mines is bigger than number of cells.
+		"""		
+		# set the num_mines to bigger than number of cells
+		self.init_values['num_mines'] = '5'
+		# get API response
+		response = self.client.post(reverse('minesweeper:start_game-start_game'),self.init_values, HTTP_USER_AGENT='Mozilla/5.0', format='json')
+		# do assetions
+		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
 	def test_cannot_start_game_with_float_width(self):
 		""" 
 			Test to start a game successfully, width is float.
