@@ -5,6 +5,7 @@ A minesweeper API built with Python.
 ## Requirements in the requirements.txt
 - Django
 - Djangorestframework
+- cors
 
 ## Considerations
 
