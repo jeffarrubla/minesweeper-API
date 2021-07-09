@@ -14,7 +14,7 @@ A minesweeper built with Python.
 - There should be 2 methods for the API **start game** and **show contents** or flag cell.
 - If a game hasn't started and **shows contents** is called then it should returns and error.
 - **start game** has mandatory widht, height and number of mines they all have to be positive integers.
-- **show contents** has mandatory x, y, the parameter flag is optional and can be true or false. If cell mine display all the field, let the user he lost and return the total of time (hours, minutes and seconds). If he's flagging a cell mark it as flag, or he's just "clicking" on a cell, display its contents, if not mine, display adjacents cells that are not mines (do this with recursion). if all the cells display and the remained are mines display user as winner, returns board, with time and message.
+- **show contents** has mandatory x, y, the parameter flag is optional and can be true or false. If cell mine display all the field, let the user he lost and return the total of time (hours, minutes and seconds). If he's flagging a cell mark it as flag, or he's just "clicking" on a cell, display its contents, if not mine, display adjacents cells that are not mines (do this with recursion). if all the cells are displayed and the remained are mines display user as winner, returns board, with time and message.
 
 ## Routes
 
