@@ -3,7 +3,6 @@ import json
 import random
 from django.shortcuts import render
 from json import JSONEncoder
-from django.core.serializers.json import DjangoJSONEncoder
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
