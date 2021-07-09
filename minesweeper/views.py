@@ -19,9 +19,9 @@ class Cell:
 
 		When created it's not flagged and not visible.
 		parameters:
-		value -- mine: *, 0 no mines arround, > 0 count of mines
-	    flagged -- is a flagged cell? (default False)
-	    visible -- is a visible cell? (default False)
+			value -- mine: *, 0 no mines arround, > 0 count of mines
+			flagged -- is a flagged cell? (default False)
+			visible -- is a visible cell? (default False)
 	"""
 
 	def __init__(self, value=0, flagged=False, visible=False):
@@ -36,9 +36,15 @@ class Cell:
 		return self.value == VALUE_MINE
 
 	def set_flag(self,state):
+		"""
+			to set flag to a cell
+		"""
 		self.flagged = state
 
 	def set_visible(self):
+		"""
+			to show the contents of a cell
+		"""
 		self.visible = True		
 
 	def __str__(self):        
@@ -71,12 +77,12 @@ class MinefieldViewSet(viewsets.GenericViewSet):
 			Stores the data on session and returns the minefield
 
 			parameters:
-		    width -- minefield's width (required)
-		    height -- minefield's height (required)
-		    num_mines -- minefield's number of mines (required)
+				width -- minefield's width (required)
+				height -- minefield's height (required)
+				num_mines -- minefield's number of mines (required)
 
-		    returns:
-		    The minefield list
+			returns:
+				The minefield list
 		"""
 		try:
 			width = int(request.data.get('width',''))
@@ -148,12 +154,12 @@ class MinefieldViewSet(viewsets.GenericViewSet):
 			otherwise returns the board and the time.			
 
 			parameters:
-		    flag -- is flag or showing? (required, true or false)
-		    x -- x coordinate (required)
-		    y -- y coordinate (required)
+				flag -- is flag or showing? (required, true or false)
+				x -- x coordinate (required)
+				y -- y coordinate (required)
 
-		    returns:
-		    	The minefield list (if not lost or won) and time
+			returns:
+				The minefield list (if not lost or won) and time
 		"""
 			
 		if 'won' not in request.session or 'lost' not in request.session or 'initialized' not in request.session or not request.session['initialized']:
