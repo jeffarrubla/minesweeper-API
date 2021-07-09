@@ -1,10 +1,10 @@
 # Minesweeper API
 
-A minesweeper built with Python.
+A minesweeper API built with Python.
 
 ## Requirements in the requirements.txt
 - Django
-- Djangorestframework (easy to use for creating APIs)
+- Djangorestframework
 
 ## Considerations
 
