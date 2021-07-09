@@ -1,3 +1,4 @@
+import time
 import json
 import random
 from django.shortcuts import render
@@ -62,6 +63,12 @@ class MinefieldViewSet(viewsets.GenericViewSet):
 	def start_game(self, request):
 		"""
 			Inits the minefield.
+			It validates that  width, height and num_mines are positive integers
+			if so generate a list of lists with each element of type Cell,
+			Then gets the elements of the list shuffle them and get the the number 
+			of mines and clean cell, fill the mines cell with the value
+			and count the mines arount the clean points.
+			Stores the data on session and returns the minefield
 
 			parameters:
 		    width -- minefield's width (required)
@@ -112,20 +119,52 @@ class MinefieldViewSet(viewsets.GenericViewSet):
 		
 		# Store the data on the session
 		request.session['initialized'] = True
+		request.session['lost'] = False
+		request.session['won'] = False
 		request.session['cells'] = json.dumps(self.cells, indent=4, cls=CellEncoder)	# serializer the object to store as json
 		request.session['width'] = width
 		request.session['height'] = height
+		request.session['start'] = time.time()
 		# Return the minefield
 		return Response({'minefield':cells_to_str(self.cells)},status=status.HTTP_201_CREATED)
 
 	@action(methods=['POST'], detail=False, url_name='show_or_flag_cell_contents_at_point', url_path='show-or-flag-cell-contents-at-point')
 	def show_or_flag_cell_contents_at_point(self, request):
-		# define the cell list
-		self.cells = [[Cell(0) for _ in range(request.session['width']) ] for _ in range(request.session['height'])]
-		
-		if 'initialized' not in request.session or not request.session['initialized']:
+		"""
+			Shows or flags a cell at a point.
+			Checks if has won, lost or not initializated a game.
+			If has lost or win shows the respective message.
+			Checks that x and y be positive integers and they are
+			in the range of width and height.
+			create the cell size with the information from session,
+			loads the data from the session and then fill up the 
+			cells with the values of it.
+			If flags cell, flags it else checks if mine if so displays
+			the whole minefield and return it and the time, else 
+			displays the cells next to it that doesn't have a mine.
+			then displays the cell selected and store the cells in 
+			the session, checks if all cells are shown or with mine
+			if so is a winner returns the whole board and the time
+			otherwise returns the board and the time.			
+
+			parameters:
+		    flag -- is flag or showing? (required, true or false)
+		    x -- x coordinate (required)
+		    y -- y coordinate (required)
+
+		    returns:
+		    	The minefield list (if not lost or won) and time
+		"""
+			
+		if 'won' not in request.session or 'lost' not in request.session or 'initialized' not in request.session or not request.session['initialized']:
 			return Response({'error':'Inicializa primero el juego'},status=status.HTTP_400_BAD_REQUEST)
 
+		if request.session['lost']:
+			return Response({'error':'Haz perdido, Inicializa un nuevo juego'},status=status.HTTP_400_BAD_REQUEST)
+
+		if request.session['won']:
+			return Response({'error':'Ya haz ganado, Inicializa un nuevo juego'},status=status.HTTP_400_BAD_REQUEST)
+			
 		try:
 			x = int(request.data.get('x',''))
 		except ValueError:
@@ -142,6 +181,9 @@ class MinefieldViewSet(viewsets.GenericViewSet):
 		if y >= request.session['height']:
 			return Response({'error':'El valor de y no debe ser mayor que el alto'},status=status.HTTP_400_BAD_REQUEST)
 
+		# define the cell list
+		self.cells = [[Cell(0) for _ in range(request.session['width']) ] for _ in range(request.session['height'])]
+
 		# get the contents fron json 
 		temp = json.loads(request.session['cells'])
 		# to fill the list with the objects and its current values.
@@ -152,17 +194,22 @@ class MinefieldViewSet(viewsets.GenericViewSet):
 	 	# is to flag a cell?
 		if bool(request.data.get('flag',False)):			
 			self.cells[y][x].set_flag(True)
-
-		if self.cells[y][x].is_mine():			
-			return Response({'minefield':cells_to_str(show_contents_all_cells(self.cells)),'information':"Haz perdido"},status=status.HTTP_200_OK)
-		
-		show_contents_at_point(Point(x,y), self.cells)		
+		elif self.cells[y][x].is_mine():	
+			request.session['lost'] = True
+			t_diff = time.localtime(time.time() - request.session['start'])
+			return Response({'minefield':cells_to_str(show_contents_all_cells(self.cells)),'information':"Haz perdido",'time':'{h}h {m}m {s}s'.format(h=t_diff.tm_hour, m=t_diff.tm_min, s=t_diff.tm_sec)},status=status.HTTP_200_OK)
+		else:
+			show_contents_at_point(Point(x,y), self.cells)		
 
 		self.cells[y][x].set_visible()
 
 		request.session['cells'] = json.dumps(self.cells, indent=4, cls=CellEncoder) # update the session
 
+		# are all the cells displayed or with mine? then won
 		if all_cells_diplayed(self.cells):
-			return Response({'minefield':cells_to_str(self.cells),'information':"Haz ganado"},status=status.HTTP_200_OK)			
+			request.session['won'] = True
+			t_diff = time.localtime(time.time() - request.session['start'])
+			return Response({'minefield':cells_to_str(self.cells),'information':"Haz ganado",'time':'{h}h {m}m {s}s'.format(h=t_diff.tm_hour, m=t_diff.tm_min, s=t_diff.tm_sec)},status=status.HTTP_200_OK)			
 		
-		return Response({'minefield':cells_to_str(self.cells)},status=status.HTTP_200_OK)
+		t_diff = time.localtime(time.time() - request.session['start'])
+		return Response({'minefield':cells_to_str(self.cells),'time':'{h}h {m}m {s}s'.format(h=t_diff.tm_hour, m=t_diff.tm_min, s=t_diff.tm_sec)},status=status.HTTP_200_OK)
