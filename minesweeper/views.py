@@ -165,4 +165,4 @@ class MinefieldViewSet(viewsets.GenericViewSet):
 		if all_cells_diplayed(self.cells):
 			return Response({'minefield':cells_to_str(self.cells),'information':"Haz ganado"},status=status.HTTP_200_OK)			
 		
-		return Response({'minefield':cells_to_str(self.cells),'[y][x]':str(y)+str(x),'temp':temp},status=status.HTTP_200_OK)
+		return Response({'minefield':cells_to_str(self.cells)},status=status.HTTP_200_OK)

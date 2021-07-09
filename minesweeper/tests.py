@@ -2,6 +2,8 @@ from django.urls import reverse
 from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework import status
+from .utils import count_mines_around_point, iter_through_points
+from .views import Cell
 
 #for testing to log things
 import sys
@@ -377,4 +379,217 @@ class StartGameTest(TestCase):
 		# get API response
 		response = self.client.post(reverse('minesweeper:start_game-start_game'),self.init_values, HTTP_USER_AGENT='Mozilla/5.0', format='json')
 		# do assetions		
+		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+class ShowOrFlagCellContentsAtPointTest(TestCase):
+
+	def setUp(self):
+		"""
+			Create instance of the API and start the values
+		"""
+		self.client = APIClient()	
+		# generate the minesweeper	
+		response = self.client.post(reverse('minesweeper:start_game-start_game'),{'width':'3','height':'3','num_mines':'1'}, HTTP_USER_AGENT='Mozilla/5.0', format='json')
+		self.values = {'flag':False,'x':'2','y':'2'}
+
+	def test_show_cell_contents_at_point_succefully(self):
+		""" 
+			Test to show a cell successfully.			
+
+			Parameters:
+			----------
+				flag -- is flag or showing? (required, true or false)
+			    x -- x coordinate (required)
+			    y -- y coordinate (required)
+
+			Assertions
+			----------
+				This test is successful showing cell contents.
+		"""		
+		
+		# get API response
+		response = self.client.post(reverse('minesweeper:show_or_flag_cell_contents_at_point-show_or_flag_cell_contents_at_point'),self.values, HTTP_USER_AGENT='Mozilla/5.0', format='json')
+		# do assetions
+		self.assertNotEqual(response.json()['minefield'][2][2], ' ') # the value at that point is different from ' '
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+	def test_flag_cell_contents_at_point_succefully(self):
+		""" 
+			Test to flag a cell successfully.			
+
+			Parameters:
+			----------
+				flag -- is flag or showing? (required, true or false)
+			    x -- x coordinate (required)
+			    y -- y coordinate (required)
+
+			Assertions
+			----------
+				This test is successful showing cell contents.
+		"""		
+		self.values['flag'] = True
+		# get API response
+		response = self.client.post(reverse('minesweeper:show_or_flag_cell_contents_at_point-show_or_flag_cell_contents_at_point'),self.values, HTTP_USER_AGENT='Mozilla/5.0', format='json')
+		# do assetions
+		self.assertEqual(response.json()['minefield'][2][2], 'F') # the value at that point is 'F'
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+	def test_cannot_show_or_flag_cell_contents_at_point_x_not_number(self):
+		""" 
+			Test to start a game successfully, x is not number.
+
+			Parameters:
+			----------
+				flag -- is flag or showing? (required, true or false)
+			    x -- x coordinate (required)
+			    y -- y coordinate (required)
+
+			Assertions
+			----------
+				This test fails x is not a number
+		"""		
+		self.values['x'] = 'string'
+		# get API response
+		response = self.client.post(reverse('minesweeper:show_or_flag_cell_contents_at_point-show_or_flag_cell_contents_at_point'),self.values, HTTP_USER_AGENT='Mozilla/5.0', format='json')
+		# do assetions
+		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+	def test_cannot_show_or_flag_cell_contents_at_point_y_not_number(self):
+		""" 
+			Test to start a game successfully, y is not number.
+
+			Parameters:
+			----------
+				flag -- is flag or showing? (required, true or false)
+			    x -- x coordinate (required)
+			    y -- y coordinate (required)
+
+			Assertions
+			----------
+				This test fails y is not a number
+		"""		
+		self.values['y'] = 'string'
+		# get API response
+		response = self.client.post(reverse('minesweeper:show_or_flag_cell_contents_at_point-show_or_flag_cell_contents_at_point'),self.values, HTTP_USER_AGENT='Mozilla/5.0', format='json')
+		# do assetions
+		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+	def test_cannot_show_or_flag_cell_contents_at_point_x_empty(self):
+		""" 
+			Test to start a game successfully, x is empty.
+
+			Parameters:
+			----------
+				flag -- is flag or showing? (required, true or false)
+			    x -- x coordinate (required)
+			    y -- y coordinate (required)
+
+			Assertions
+			----------
+				This test fails x is empty.
+		"""		
+		self.values['x'] = ' '
+		# get API response
+		response = self.client.post(reverse('minesweeper:show_or_flag_cell_contents_at_point-show_or_flag_cell_contents_at_point'),self.values, HTTP_USER_AGENT='Mozilla/5.0', format='json')
+		# do assetions
+		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+	def test_cannot_show_or_flag_cell_contents_at_point_y_empty(self):
+		""" 
+			Test to start a game successfully, y is empty.
+
+			Parameters:
+			----------
+				flag -- is flag or showing? (required, true or false)
+			    x -- x coordinate (required)
+			    y -- y coordinate (required)
+
+			Assertions
+			----------
+				This test fails y is empty.
+		"""		
+		self.values['y'] = ' '
+		# get API response
+		response = self.client.post(reverse('minesweeper:show_or_flag_cell_contents_at_point-show_or_flag_cell_contents_at_point'),self.values, HTTP_USER_AGENT='Mozilla/5.0', format='json')
+		# do assetions
+		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+	def test_cannot_show_or_flag_cell_contents_at_point_x_is_float(self):
+		""" 
+			Test to start a game successfully, x is float.
+
+			Parameters:
+			----------
+				flag -- is flag or showing? (required, true or false)
+			    x -- x coordinate (required)
+			    y -- y coordinate (required)
+
+			Assertions
+			----------
+				This test fails x is float
+		"""		
+		self.values['x'] = '5.322'
+		# get API response
+		response = self.client.post(reverse('minesweeper:show_or_flag_cell_contents_at_point-show_or_flag_cell_contents_at_point'),self.values, HTTP_USER_AGENT='Mozilla/5.0', format='json')
+		# do assetions
+		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+	def test_cannot_show_or_flag_cell_contents_at_point_y_is_float(self):
+		""" 
+			Test to start a game successfully, y is float
+
+			Parameters:
+			----------
+				flag -- is flag or showing? (required, true or false)
+			    x -- x coordinate (required)
+			    y -- y coordinate (required)
+
+			Assertions
+			----------
+				This test fails y is float
+		"""		
+		self.values['y'] = '5.322'
+		# get API response
+		response = self.client.post(reverse('minesweeper:show_or_flag_cell_contents_at_point-show_or_flag_cell_contents_at_point'),self.values, HTTP_USER_AGENT='Mozilla/5.0', format='json')
+		# do assetions
+		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+	def test_cannot_show_or_flag_cell_contents_at_point_x_is_bigger_than_width(self):
+		""" 
+			Test to start a game successfully, x is bigger than width.
+
+			Parameters:
+			----------
+				flag -- is flag or showing? (required, true or false)
+			    x -- x coordinate (required)
+			    y -- y coordinate (required)
+
+			Assertions
+			----------
+				This test fails x is bigger than width.
+		"""		
+		self.values['x'] = '10'
+		# get API response
+		response = self.client.post(reverse('minesweeper:show_or_flag_cell_contents_at_point-show_or_flag_cell_contents_at_point'),self.values, HTTP_USER_AGENT='Mozilla/5.0', format='json')
+		# do assetions
+		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+	def test_cannot_show_or_flag_cell_contents_at_point_y_is_bigger_than_width(self):
+		""" 
+			Test to start a game successfully, y is bigger than width.
+
+			Parameters:
+			----------
+				flag -- is flag or showing? (required, true or false)
+			    x -- x coordinate (required)
+			    y -- y coordinate (required)
+
+			Assertions
+			----------
+				This test fails y is bigger than width.
+		"""		
+		self.values['y'] = '10'
+		# get API response
+		response = self.client.post(reverse('minesweeper:show_or_flag_cell_contents_at_point-show_or_flag_cell_contents_at_point'),self.values, HTTP_USER_AGENT='Mozilla/5.0', format='json')
+		# do assetions
 		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
