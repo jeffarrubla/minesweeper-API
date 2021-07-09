@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'minesweeper',
     # Third-party Apps.
     'rest_framework',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -50,6 +51,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'minesweeperAPI.urls'
@@ -102,6 +105,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# for the petitions (add your urls here )
+CORS_ALLOWED_ORIGINS = [ ]
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
